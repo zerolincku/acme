@@ -1,25 +1,26 @@
 import { createBrowserRouter } from "react-router-dom";
-import App from "@/App";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
+import Layout from "@/components/Layout.tsx";
+import Settings from "@/pages/Settings.tsx";
 
 export const router = createBrowserRouter([
     {
         path: "/",
-        element: <App />,
+        element: <Layout />,
         children: [
             {
-                path: "dashboard",
+                index: true, // 默认子路由
                 element: <Dashboard />,
             },
             {
-                path: "users",
-                element: <div>用户管理</div>,
+                path: "/settings",
+                element: <Settings />,
             }
         ]
     },
     {
         path: "/login",
-        element: <Login />,
+        element: <Login />, // 登录页通常不需要侧边栏，所以放在外面
     },
 ]);
