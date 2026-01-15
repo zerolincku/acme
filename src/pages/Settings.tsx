@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { useStore } from '../store/useStore';
+import { Button } from '@/components/ui/button';
+import { useStore } from '@/store/useStore';
 
 function Settings() {
     const { user } = useStore();

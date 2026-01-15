@@ -1,6 +1,6 @@
 import { useStore } from '@/store/useStore';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Plus, Minus, RotateCcw, Activity, Users, DollarSign } from 'lucide-react';
 
 function Dashboard() {
