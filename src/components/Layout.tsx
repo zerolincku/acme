@@ -1,10 +1,9 @@
-import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Settings as SettingsIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 
-const Layout: React.FC = () => {
+function Layout() {
     const location = useLocation();
 
     const navItems = [
@@ -58,6 +57,6 @@ const Layout: React.FC = () => {
             </main>
         </div>
     );
-};
+}
 
 export default Layout;
