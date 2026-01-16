@@ -14,20 +14,15 @@ import {
     ArrowUp,
     ArrowDown,
     CornerDownLeft,
-    Box, type LucideIcon
+    Box,
+    Command,
+    type LucideIcon
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
+import { Avatar, AvatarFallback } from './ui/avatar';
 import { useStore } from '../store/useStore';
-import { navRoutes, type RouteConfig } from '@/lib/routes';
-
-interface SearchItem {
-    key: string;
-    desc: string;
-    icon?: LucideIcon;
-    path: string;
-}
+import { navRoutes, type RouteConfig } from '../lib/routes';
 
 export default function Sidebar() {
     const location = useLocation();
@@ -55,32 +50,44 @@ export default function Sidebar() {
 
     // 1. Generate Search Items from Router Config
     const searchItems = useMemo(() => {
+        interface SearchItem {
+            key: string;
+            breadcrumbs: string[];
+            desc?: string;
+            icon: LucideIcon;
+            path: string;
+        }
+
         const appItems: SearchItem[] = [];
 
-        const flattenRoutes = (routes: RouteConfig[]) => {
+        const flattenRoutes = (routes: RouteConfig[], parentLabels: string[] = []) => {
             routes.forEach(route => {
+                const currentBreadcrumbs = [...parentLabels, route.label];
+
                 if (route.component) {
                     appItems.push({
                         key: route.label,
-                        desc: `Go to ${route.label}`,
-                        icon: route.icon,
+                        breadcrumbs: currentBreadcrumbs,
+                        // desc removed as requested
+                        icon: route.icon || Box,
                         path: route.path
                     });
                 }
                 if (route.children) {
-                    flattenRoutes(route.children);
+                    flattenRoutes(route.children, currentBreadcrumbs);
                 }
             });
         };
         flattenRoutes(navRoutes);
 
-        return [...appItems];
+        return appItems;
     }, []);
 
     // Filtered items derived state
     const filteredItems = searchItems.filter(item =>
         item.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.desc.toLowerCase().includes(searchQuery.toLowerCase())
+        item.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.breadcrumbs.some((b: string) => b.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const handleLogout = () => {
@@ -263,7 +270,6 @@ export default function Sidebar() {
                         }
 
                         // Render Single Item (Leaf node)
-                        // Ensure we don't render single items that don't have components or are just grouping containers without children
                         if (!item.component) return null;
 
                         const isActive = location.pathname === item.path;
@@ -422,7 +428,7 @@ export default function Sidebar() {
                             ref={scrollContainerRef}
                         >
                             {searchQuery === "" && (
-                                <div className="px-2 py-2 text-xs font-semibold text-muted-foreground">Search tips</div>
+                                <div className="px-2 py-2 text-xs font-semibold text-muted-foreground">Recent & Suggestions</div>
                             )}
 
                             <div className="space-y-1">
@@ -432,51 +438,71 @@ export default function Sidebar() {
 
                                     return (
                                         <div
-                                            key={item.key}
+                                            key={item.key + index}
                                             ref={isSelected ? selectedItemRef : null}
                                             onClick={() => handleSearchSelect(item)}
                                             onMouseEnter={() => setSelectedIndex(index)}
                                             className={cn(
-                                                "flex items-center justify-between px-3 py-3 rounded-md cursor-pointer group transition-colors",
+                                                "flex items-center justify-between px-3 py-2 rounded-md cursor-pointer group transition-colors",
                                                 isSelected ? "bg-accent text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
                                             )}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-3 min-w-[120px]">
-                                                    {ItemIcon && (
-                                                        <ItemIcon
-                                                            className={cn("h-4 w-4 transition-colors", isSelected ? "text-primary" : "text-muted-foreground")}
-                                                        />
-                                                    )}
-                                                    <span className="font-medium text-sm">{item.key}:</span>
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                                                    <ItemIcon className={cn("h-4 w-4 transition-colors", isSelected ? "text-primary" : "text-muted-foreground")} />
                                                 </div>
-                                                <span className={cn("text-sm transition-colors", isSelected ? "text-accent-foreground/90" : "text-muted-foreground group-hover:text-accent-foreground/80")}>{item.desc}</span>
+
+                                                <div className="flex flex-col truncate">
+                                                    {/* Main Path / Breadcrumbs */}
+                                                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                                                        {item.breadcrumbs.map((crumb: string, i: number) => (
+                                                            <React.Fragment key={i}>
+                                                                {i > 0 && <span className="text-muted-foreground/50">›</span>}
+                                                                <span className={cn(i === item.breadcrumbs.length - 1 ? "text-foreground" : "text-muted-foreground")}>
+                                                  {crumb}
+                                                </span>
+                                                            </React.Fragment>
+                                                        ))}
+                                                    </div>
+                                                    {/* Description */}
+                                                    {item.desc && (
+                                                        <span className={cn("text-xs transition-colors line-clamp-1", isSelected ? "text-accent-foreground/80" : "text-muted-foreground")}>
+                                                {item.desc}
+                                            </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <CornerDownLeft className={cn(
-                                                "h-3.5 w-3.5 transition-all",
+                                                "h-3.5 w-3.5 transition-all flex-shrink-0 ml-2",
                                                 isSelected ? "opacity-50 translate-x-0" : "opacity-0 -translate-x-2 group-hover:opacity-50 group-hover:translate-x-0"
                                             )} />
                                         </div>
                                     );
                                 })}
                                 {filteredItems.length === 0 && (
-                                    <div className="p-4 text-center text-sm text-muted-foreground">
-                                        No results found for "{searchQuery}"
+                                    <div className="p-8 text-center text-sm text-muted-foreground">
+                                        <Command className="mx-auto h-8 w-8 mb-3 opacity-20" />
+                                        <p>No results found for "{searchQuery}"</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Footer */}
-                        <div className="border-t bg-muted/40 px-4 py-2.5 flex items-center justify-start gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1.5">
-                                <ArrowUp className="h-3 w-3" />
-                                <ArrowDown className="h-3 w-3" />
-                                <span>to navigate</span>
+                        <div className="border-t bg-muted/40 px-4 py-2.5 flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1">
+                                    <ArrowUp className="h-3 w-3" />
+                                    <ArrowDown className="h-3 w-3" />
+                                    <span>to navigate</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <CornerDownLeft className="h-3 w-3" />
+                                    <span>to select</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <CornerDownLeft className="h-3 w-3" />
-                                <span>to select</span>
+                            <div>
+                                <span className="opacity-70">Acme Search</span>
                             </div>
                         </div>
                     </div>
