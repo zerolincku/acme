@@ -1,9 +1,42 @@
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useStore } from '@/store/useStore';
+import { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { useStore } from '../store/useStore';
+import { LogOut, Save, User as UserIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-function Settings() {
-    const { user } = useStore();
+export default function Settings() {
+    const { currentUser, updateUser, logout, addToast } = useStore();
+    const navigate = useNavigate();
+
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+
+    useEffect(() => {
+        if (currentUser) {
+            setName(currentUser.name);
+            setEmail(currentUser.email);
+        }
+    }, [currentUser]);
+
+    const handleSave = () => {
+        updateUser({ name, email });
+        addToast({
+            title: "Profile Updated",
+            description: "Your profile information has been saved.",
+            variant: "success"
+        });
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+        addToast({
+            description: "You have been logged out.",
+        });
+    };
 
     return (
         <div className="space-y-6">
@@ -12,37 +45,70 @@ function Settings() {
                 <p className="text-muted-foreground">Manage your account settings and preferences.</p>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>Update your personal details here.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                Display Name
-                            </label>
-                            <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                {user?.name}
+            <div className="grid gap-6">
+                {/* Profile Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <UserIcon className="h-5 w-5" /> Profile Information
+                        </CardTitle>
+                        <CardDescription>Update your personal details here.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Display Name</Label>
+                                <Input
+                                    id="name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email Address</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Role</Label>
+                                <Input disabled value={currentUser?.role || ''} className="bg-muted text-muted-foreground" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>ID</Label>
+                                <Input disabled value={currentUser?.id || ''} className="bg-muted text-muted-foreground" />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                Role
-                            </label>
-                            <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-muted-foreground">
-                                {user?.role}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="pt-4">
-                        <Button>Save Changes</Button>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                    <CardFooter className="flex justify-between border-t p-6">
+                        <p className="text-sm text-muted-foreground">Last updated: Just now</p>
+                        <Button onClick={handleSave}>
+                            <Save className="mr-2 h-4 w-4" /> Save Changes
+                        </Button>
+                    </CardFooter>
+                </Card>
+
+                {/* Danger Zone */}
+                <Card className="border-destructive/20">
+                    <CardHeader>
+                        <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                        <CardDescription>Irreversible and sensitive actions.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                            Sign out of your session on this device.
+                        </p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button variant="destructive" onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" /> Log Out
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
         </div>
     );
 }
-
-export default Settings;
