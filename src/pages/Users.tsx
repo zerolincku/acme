@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { Button } from '../components/ui/button';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/ui/table';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { Plus, Search, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useStore } from '@/store/useStore';
+import { Input } from '../components/ui/input';
+import { useStore } from '../store/useStore';
 
 // Extended Mock Data for Pagination
 const allUsers = [
@@ -23,12 +23,11 @@ const allUsers = [
     { id: 12, name: "Liam Neeson", email: "liam@example.com", role: "Admin", status: "Active" },
 ];
 
-const ITEMS_PER_PAGE = 5;
-
 export default function Users() {
     const { addToast } = useStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const handleAddUser = () => {
         addToast({
@@ -44,9 +43,9 @@ export default function Users() {
     );
 
     // Pagination Logic
-    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const currentUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
     const goToPreviousPage = () => {
         if (currentPage > 1) setCurrentPage(prev => prev - 1);
@@ -146,11 +145,29 @@ export default function Users() {
                 </CardContent>
 
                 {/* Pagination Footer */}
-                <CardFooter className="flex items-center justify-between space-x-2 border-t px-6 py-4">
-                    <div className="text-sm text-muted-foreground">
-                        Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} of{" "}
-                        {filteredUsers.length} entries
+                <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 py-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <span>Rows per page:</span>
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => {
+                                    setItemsPerPage(Number(e.target.value));
+                                    setCurrentPage(1); // Reset to first page when changing page size
+                                }}
+                                className="h-8 w-16 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+                        </div>
+                        <span>
+               Showing {filteredUsers.length === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{" "}
+                            {filteredUsers.length} entries
+             </span>
                     </div>
+
                     <div className="flex items-center space-x-2">
                         <Button
                             variant="outline"

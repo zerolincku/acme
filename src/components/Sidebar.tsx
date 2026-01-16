@@ -60,21 +60,23 @@ export default function Sidebar() {
 
         const appItems: SearchItem[] = [];
 
-        const flattenRoutes = (routes: RouteConfig[], parentLabels: string[] = []) => {
+        const flattenRoutes = (routes: RouteConfig[], parentLabels: string[] = [], rootIcon?: LucideIcon) => {
             routes.forEach(route => {
                 const currentBreadcrumbs = [...parentLabels, route.label];
+
+                // Use passed rootIcon if available (for children), otherwise use current route's icon (for top-level)
+                const displayIcon = rootIcon || route.icon || Box;
 
                 if (route.component) {
                     appItems.push({
                         key: route.label,
                         breadcrumbs: currentBreadcrumbs,
-                        // desc removed as requested
-                        icon: route.icon || Box,
+                        icon: displayIcon,
                         path: route.path
                     });
                 }
                 if (route.children) {
-                    flattenRoutes(route.children, currentBreadcrumbs);
+                    flattenRoutes(route.children, currentBreadcrumbs, displayIcon);
                 }
             });
         };
