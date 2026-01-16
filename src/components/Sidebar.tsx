@@ -16,7 +16,9 @@ import {
     CornerDownLeft,
     Box,
     Command,
-    type LucideIcon
+    type LucideIcon,
+    PanelLeftClose,
+    PanelLeftOpen
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
@@ -41,6 +43,13 @@ export default function Sidebar() {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const selectedItemRef = useRef<HTMLDivElement>(null);
+
+    // State for Sidebar Collapse
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    // State for Hovered Menu (Floating Submenu)
+    const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
+    // Ref for Hover Timeout to prevent flickering/accidental closing
+    const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Refs for click outside
     const menuRef = useRef<HTMLDivElement>(null);
@@ -98,9 +107,38 @@ export default function Sidebar() {
     };
 
     const toggleMenu = (label: string) => {
+        // If collapsed, clicking the parent icon shouldn't necessarily expand the sidebar anymore
+        // It is handled by hover for submenu.
+        if (isCollapsed) return;
+
         setExpandedMenus((prev) =>
             prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
         );
+    };
+
+    // --- Hover Handlers with Delay ---
+    const handleMouseEnter = (label: string) => {
+        // Clear any pending close timer when entering/re-entering
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+            hoverTimeoutRef.current = null;
+        }
+
+        if (isCollapsed) {
+            setHoveredMenu(label);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        // Start a timer to close the menu. If the user enters the menu content
+        // or goes back to the icon before this fires, it will be cleared.
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+
+        hoverTimeoutRef.current = setTimeout(() => {
+            setHoveredMenu(null);
+        }, 300); // 300ms delay gives enough time to cross the gap
     };
 
     // Keyboard shortcut for search
@@ -155,8 +193,10 @@ export default function Sidebar() {
         };
     }, []);
 
-    // Auto-expand menu if child is active
+    // Auto-expand menu if child is active AND NOT collapsed
     useEffect(() => {
+        if (isCollapsed) return;
+
         navRoutes.forEach((item) => {
             if (item.children) {
                 // Simple check: if current pathname matches a child path exactly
@@ -169,7 +209,7 @@ export default function Sidebar() {
                 }
             }
         });
-    }, [location.pathname]);
+    }, [location.pathname, isCollapsed]);
 
     const handleSearchSelect = (item: typeof searchItems[0]) => {
         if (item.path) {
@@ -195,57 +235,99 @@ export default function Sidebar() {
 
     return (
         <>
-            <aside className="w-full md:w-64 bg-background border-r flex flex-col z-20 flex-shrink-0 transition-colors duration-300">
-                <div className="p-6 border-b flex items-center gap-2">
-                    <div className="h-6 w-6 bg-primary rounded-full transition-colors duration-300" />
-                    <h1 className="text-lg font-bold tracking-tight">Acme Corp</h1>
+            <aside
+                className={cn(
+                    "bg-background border-r flex flex-col z-20 flex-shrink-0 transition-all duration-300 ease-in-out",
+                    isCollapsed ? "w-[70px]" : "w-full md:w-64"
+                )}
+            >
+                <div className={cn("flex items-center border-b h-[65px]", isCollapsed ? "justify-center px-0" : "px-6 justify-between")}>
+                    {!isCollapsed && (
+                        <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="h-6 w-6 bg-primary rounded-full shrink-0" />
+                            <h1 className="text-lg font-bold tracking-tight truncate">Acme Corp</h1>
+                        </div>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                    >
+                        {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+                    </Button>
                 </div>
 
                 {/* Quick Search Input */}
-                <div className="px-4 py-4 pb-2">
-                    <button
-                        onClick={() => setIsSearchOpen(true)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground bg-muted/40 border border-input rounded-md hover:bg-muted/80 hover:text-foreground transition-all duration-200 group ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                        <Search className="h-4 w-4 group-hover:text-primary transition-colors" />
-                        <span className="flex-1 text-left truncate">Quick search...</span>
-                        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                            <span className="text-xs">⌘</span>K
-                        </kbd>
-                    </button>
+                <div className={cn("py-4 pb-2", isCollapsed ? "px-2" : "px-4")}>
+                    {isCollapsed ? (
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="w-full h-10"
+                            onClick={() => setIsSearchOpen(true)}
+                            title="Search (Cmd+K)"
+                        >
+                            <Search className="h-4 w-4" />
+                        </Button>
+                    ) : (
+                        <button
+                            onClick={() => setIsSearchOpen(true)}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground bg-muted/40 border border-input rounded-md hover:bg-muted/80 hover:text-foreground transition-all duration-200 group ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                            <Search className="h-4 w-4 group-hover:text-primary transition-colors" />
+                            <span className="flex-1 text-left truncate">Quick search...</span>
+                            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                                <span className="text-xs">⌘</span>K
+                            </kbd>
+                        </button>
+                    )}
                 </div>
 
                 {/* Dynamic Navigation Rendering */}
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                <nav
+                    className={cn(
+                        "flex-1 p-4 space-y-1",
+                        isCollapsed ? "overflow-visible" : "overflow-y-auto scrollbar-thin"
+                    )}
+                >
                     {navRoutes.map((item) => {
                         const Icon = item.icon || Box; // Fallback icon
 
                         // Render Parent Item with Children
                         if (item.children) {
-                            const isExpanded = expandedMenus.includes(item.label);
-                            // Check if any child is active
+                            const isExpanded = expandedMenus.includes(item.label) && !isCollapsed;
                             const isActiveParent = item.children.some(child => location.pathname === child.path);
 
                             return (
-                                <div key={item.label} className="space-y-1">
+                                <div
+                                    key={item.label}
+                                    className="relative group"
+                                    onMouseEnter={() => handleMouseEnter(item.label)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
                                     <Button
                                         variant={isActiveParent ? "secondary" : "ghost"}
                                         className={cn(
-                                            "w-full justify-between",
+                                            "w-full",
+                                            isCollapsed ? "justify-center px-2" : "justify-between",
                                             isActiveParent && "font-semibold"
                                         )}
                                         onClick={() => toggleMenu(item.label)}
+                                        title={isCollapsed ? item.label : undefined}
                                     >
                                         <div className="flex items-center">
-                                            <Icon className="mr-2 h-4 w-4" />
-                                            {item.label}
+                                            <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                                            {!isCollapsed && <span>{item.label}</span>}
                                         </div>
-                                        {isExpanded ? <ChevronDown className="h-4 w-4 opacity-50" /> : <ChevronRight className="h-4 w-4 opacity-50" />}
+                                        {!isCollapsed && (
+                                            isExpanded ? <ChevronDown className="h-4 w-4 opacity-50" /> : <ChevronRight className="h-4 w-4 opacity-50" />
+                                        )}
                                     </Button>
 
-                                    {/* Submenu with vertical guide line */}
-                                    {isExpanded && (
-                                        <div className="ml-6 mt-1 border-l border-border pl-2 space-y-1">
+                                    {/* Expanded Submenu (Standard Vertical) */}
+                                    {isExpanded && !isCollapsed && (
+                                        <div className="ml-6 mt-1 border-l border-border pl-2 space-y-1 animate-in slide-in-from-top-1 fade-in duration-200">
                                             {item.children.map((child) => {
                                                 const ChildIcon = child.icon || Box;
                                                 const isChildActive = location.pathname === child.path;
@@ -267,6 +349,31 @@ export default function Sidebar() {
                                             })}
                                         </div>
                                     )}
+
+                                    {/* Floating Submenu (Collapsed Hover State) */}
+                                    {isCollapsed && hoveredMenu === item.label && (
+                                        <div className="absolute left-full top-0 ml-2 w-48 rounded-md border bg-popover shadow-xl z-50 animate-in fade-in slide-in-from-left-2 duration-150">
+                                            <div className="px-3 py-2 text-sm font-semibold text-foreground border-b bg-muted/20">
+                                                {item.label}
+                                            </div>
+                                            <div className="p-1 flex flex-col gap-1">
+                                                {item.children.map((child) => {
+                                                    const isChildActive = location.pathname === child.path;
+                                                    return (
+                                                        <Link key={child.path} to={child.path} onClick={() => setHoveredMenu(null)}>
+                                                            <div className={cn(
+                                                                "flex items-center px-2 py-2 text-sm rounded-sm hover:bg-muted transition-colors cursor-pointer",
+                                                                isChildActive && "bg-muted font-medium text-primary"
+                                                            )}>
+                                                                <span className="flex-1">{child.label}</span>
+                                                                {isChildActive && <Check className="h-3 w-3" />}
+                                                            </div>
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         }
@@ -276,24 +383,34 @@ export default function Sidebar() {
 
                         const isActive = location.pathname === item.path;
                         return (
-                            <Link key={item.path} to={item.path}>
-                                <Button
-                                    variant={isActive ? "secondary" : "ghost"}
-                                    className={cn("w-full justify-start", isActive && "font-semibold")}
-                                >
-                                    <Icon className="mr-2 h-4 w-4" />
-                                    {item.label}
-                                </Button>
-                            </Link>
+                            <div key={item.path} className="relative group">
+                                <Link to={item.path}>
+                                    <Button
+                                        variant={isActive ? "secondary" : "ghost"}
+                                        className={cn(
+                                            "w-full",
+                                            isCollapsed ? "justify-center px-2" : "justify-start",
+                                            isActive && "font-semibold"
+                                        )}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <Icon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                                        {!isCollapsed && item.label}
+                                    </Button>
+                                </Link>
+                            </div>
                         );
                     })}
                 </nav>
 
                 {/* Settings & Appearance */}
-                <div className="px-4 pb-2" ref={themeMenuRef}>
+                <div className={cn("pb-2", isCollapsed ? "px-2" : "px-4")} ref={themeMenuRef}>
                     <div className="relative">
                         {isThemeMenuOpen && (
-                            <div className="absolute bottom-full left-0 mb-2 w-64 rounded-xl border bg-popover p-4 text-popover-foreground shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-50">
+                            <div className={cn(
+                                "absolute bottom-full mb-2 w-64 rounded-xl border bg-popover p-4 text-popover-foreground shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-50",
+                                isCollapsed ? "left-full ml-2" : "left-0"
+                            )}>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Theme</label>
@@ -352,11 +469,16 @@ export default function Sidebar() {
                         )}
                         <Button
                             variant="ghost"
-                            className={cn("w-full justify-start text-muted-foreground hover:text-foreground", isThemeMenuOpen && "bg-muted text-foreground")}
+                            className={cn(
+                                "w-full text-muted-foreground hover:text-foreground",
+                                isThemeMenuOpen && "bg-muted text-foreground",
+                                isCollapsed ? "justify-center px-2" : "justify-start"
+                            )}
                             onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                            title={isCollapsed ? "Appearance" : undefined}
                         >
-                            <Palette className="mr-2 h-4 w-4" />
-                            Appearance
+                            <Palette className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                            {!isCollapsed && "Appearance"}
                         </Button>
                     </div>
                 </div>
@@ -364,14 +486,17 @@ export default function Sidebar() {
                 {/* User Section at Bottom */}
                 <div className="p-4 border-t bg-background relative" ref={menuRef}>
                     {isUserMenuOpen && (
-                        <div className="absolute bottom-full left-4 right-4 mb-2 rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className={cn(
+                            "absolute bottom-full mb-2 rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200",
+                            isCollapsed ? "left-full ml-2 w-48" : "left-4 right-4"
+                        )}>
                             <div className="p-1">
                                 <button
                                     onClick={handleLogout}
                                     className="flex w-full items-center rounded-sm px-2 py-2 text-sm text-destructive hover:bg-muted transition-colors"
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />
-                                    Log out
+                                    <span>Log out</span>
                                 </button>
                             </div>
                         </div>
@@ -380,20 +505,26 @@ export default function Sidebar() {
                     <Button
                         variant="ghost"
                         className={cn(
-                            "w-full justify-start h-auto py-2 px-2 hover:bg-muted/50",
+                            "w-full h-auto py-2 hover:bg-muted/50",
+                            isCollapsed ? "justify-center px-0" : "justify-start px-2",
                             isUserMenuOpen && "bg-muted"
                         )}
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                        title={isCollapsed ? currentUser?.name : undefined}
                     >
-                        <div className="flex items-center gap-3 w-full">
+                        <div className={cn("flex items-center w-full", isCollapsed ? "justify-center" : "gap-3")}>
                             <Avatar className="h-8 w-8">
                                 <AvatarFallback>{currentUser?.name?.charAt(0) || 'U'}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col items-start flex-1 overflow-hidden">
-                                <span className="text-sm font-medium truncate w-full text-left">{currentUser?.name || 'Guest'}</span>
-                                <span className="text-xs text-muted-foreground truncate w-full text-left">{currentUser?.email || 'guest@example.com'}</span>
-                            </div>
-                            <ChevronsUpDown className="h-4 w-4 text-muted-foreground opacity-50" />
+                            {!isCollapsed && (
+                                <>
+                                    <div className="flex flex-col items-start flex-1 overflow-hidden">
+                                        <span className="text-sm font-medium truncate w-full text-left">{currentUser?.name || 'Guest'}</span>
+                                        <span className="text-xs text-muted-foreground truncate w-full text-left">{currentUser?.email || 'guest@example.com'}</span>
+                                    </div>
+                                    <ChevronsUpDown className="h-4 w-4 text-muted-foreground opacity-50" />
+                                </>
+                            )}
                         </div>
                     </Button>
                 </div>
