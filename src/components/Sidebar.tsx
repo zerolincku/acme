@@ -246,7 +246,7 @@ export default function Sidebar() {
                                                                     isChildActive && "bg-muted font-medium"
                                                                 )}
                                                             >
-                                                                <ChildIcon className="mr-2 h-2 w-2" />
+                                                                <ChildIcon className={cn("mr-2 h-2 w-2", isChildActive ? "text-primary" : "text-muted-foreground")} />
                                                                 {child.label}
                                                             </Button>
                                                         </Link>
