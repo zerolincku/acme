@@ -413,7 +413,6 @@ export default function Sidebar() {
                                                     {t === 'light' && <Sun className="h-3.5 w-3.5" />}
                                                     {t === 'dark' && <Moon className="h-3.5 w-3.5" />}
                                                     {t === 'system' && <Monitor className="h-3.5 w-3.5" />}
-                                                    <span className="capitalize">{t}</span>
                                                 </button>
                                             ))}
                                         </div>
