@@ -3,9 +3,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '../components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/ui/table';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import { Plus, Search, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, MoreHorizontal } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { useStore } from '../store/useStore';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '../components/ui/pagination';
 
 // Extended Mock Data for Pagination
 const allUsers = [
@@ -47,12 +56,71 @@ export default function Users() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
-    const goToPreviousPage = () => {
-        if (currentPage > 1) setCurrentPage(prev => prev - 1);
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
     };
 
-    const goToNextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+    // Generate pagination range with ellipses
+    const renderPageItems = () => {
+        const items = [];
+        const maxVisible = 5;
+
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink onClick={() => goToPage(i)} isActive={currentPage === i}>
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+        } else {
+            // Always show first page
+            items.push(
+                <PaginationItem key={1}>
+                    <PaginationLink onClick={() => goToPage(1)} isActive={currentPage === 1}>
+                        1
+                    </PaginationLink>
+                </PaginationItem>
+            );
+
+            if (currentPage > 3) {
+                items.push(<PaginationEllipsis key="ellipsis-start" />);
+            }
+
+            // Pages around current
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+
+            for (let i = start; i <= end; i++) {
+                if (i === 1 || i === totalPages) continue;
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink onClick={() => goToPage(i)} isActive={currentPage === i}>
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+
+            if (currentPage < totalPages - 2) {
+                items.push(<PaginationEllipsis key="ellipsis-end" />);
+            }
+
+            // Always show last page
+            items.push(
+                <PaginationItem key={totalPages}>
+                    <PaginationLink onClick={() => goToPage(totalPages)} isActive={currentPage === totalPages}>
+                        {totalPages}
+                    </PaginationLink>
+                </PaginationItem>
+            );
+        }
+
+        return items;
     };
 
     return (
@@ -160,6 +228,7 @@ export default function Users() {
                                 <option value={10}>10</option>
                                 <option value={20}>20</option>
                                 <option value={50}>50</option>
+                                <option value={100}>100</option>
                             </select>
                         </div>
                         <span>
@@ -168,29 +237,25 @@ export default function Users() {
              </span>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={goToPreviousPage}
-                            disabled={currentPage === 1}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                            <span className="sr-only">Previous</span>
-                        </Button>
-                        <div className="text-sm font-medium">
-                            Page {currentPage} of {totalPages || 1}
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={goToNextPage}
-                            disabled={currentPage === totalPages || totalPages === 0}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                            <span className="sr-only">Next</span>
-                        </Button>
-                    </div>
+                    <Pagination className="justify-end w-auto mx-0">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+
+                            {renderPageItems()}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    className={currentPage === totalPages || totalPages === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </CardFooter>
             </Card>
         </div>
