@@ -19,6 +19,10 @@ export type Theme = 'light' | 'dark' | 'system';
 export type ThemeColor = 'zinc' | 'red' | 'blue' | 'green' | 'orange';
 
 interface AppState {
+  // UI State
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+
   // Counter State (Legacy)
   count: number;
   increment: () => void;
@@ -45,6 +49,10 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set) => ({
+  // UI
+  isSidebarCollapsed: false,
+  toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
+
   // Counter
   count: 0,
   increment: () => set((state) => ({ count: state.count + 1 })),

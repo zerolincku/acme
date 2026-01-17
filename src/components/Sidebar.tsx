@@ -17,8 +17,6 @@ import {
     Box,
     Command,
     type LucideIcon,
-    PanelLeftClose,
-    PanelLeftOpen
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
@@ -29,7 +27,7 @@ import { navRoutes, type RouteConfig } from '../lib/routes';
 export default function Sidebar() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { currentUser, logout, theme, setTheme, themeColor, setThemeColor } = useStore();
+    const { currentUser, logout, theme, setTheme, themeColor, setThemeColor, isSidebarCollapsed: isCollapsed } = useStore();
 
     // State for menus
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -44,8 +42,6 @@ export default function Sidebar() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const selectedItemRef = useRef<HTMLDivElement>(null);
 
-    // State for Sidebar Collapse
-    const [isCollapsed, setIsCollapsed] = useState(false);
     // State for Hovered Menu (Floating Submenu)
     const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
     // Ref for Hover Timeout to prevent flickering/accidental closing
@@ -159,13 +155,10 @@ export default function Sidebar() {
     // Focus input when search opens & Reset index
     useEffect(() => {
         if (isSearchOpen && searchInputRef.current) {
-            setTimeout(() => searchInputRef.current?.focus(), 50);
+            const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
+            return () => clearTimeout(timer);
         }
-        if (!isSearchOpen) {
-            setSearchQuery("");
-        }
-        setSelectedIndex(0);
-    }, [isSearchOpen, searchQuery]);
+    }, [isSearchOpen]);
 
     // Scroll selected item into view
     useEffect(() => {
@@ -241,21 +234,12 @@ export default function Sidebar() {
                     isCollapsed ? "w-[70px]" : "w-full md:w-64"
                 )}
             >
-                <div className={cn("flex items-center border-b h-[65px]", isCollapsed ? "justify-center px-0" : "px-6 justify-between")}>
-                    {!isCollapsed && (
-                        <div className="flex items-center gap-2 overflow-hidden">
-                            <div className="h-6 w-6 bg-primary rounded-full shrink-0" />
-                            <h1 className="text-lg font-bold tracking-tight truncate">Acme Corp</h1>
-                        </div>
-                    )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                    >
-                        {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
-                    </Button>
+                {/* 头部 Logo */}
+                <div className={cn("flex items-center h-14 px-4", isCollapsed ? "justify-center" : "gap-3")}>
+                    <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                        <div className="h-3 w-3 bg-white/30 rounded-full" />
+                    </div>
+                    {!isCollapsed && <span className="text-lg font-bold tracking-tight">Acme Corp</span>}
                 </div>
 
                 {/* Quick Search Input */}
@@ -548,7 +532,10 @@ export default function Sidebar() {
                                 className="flex h-14 w-full rounded-md bg-transparent py-3 text-base outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="Search products, pages and features..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setSelectedIndex(0);
+                                }}
                                 onKeyDown={handleInputKeyDown}
                             />
                             <div className="flex items-center gap-2">
