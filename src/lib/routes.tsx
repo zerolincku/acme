@@ -3,7 +3,6 @@ import {
     LayoutDashboard,
     Users,
     Settings,
-    Shield,
     Circle,
     type LucideIcon
 } from 'lucide-react';
@@ -32,41 +31,40 @@ export const navRoutes: RouteConfig[] = [
         component: Dashboard,
     },
     {
-        path: '/users', // Parent path for grouping
+        path: '/management', // Unique parent path
         label: 'Management',
         icon: Users,
         children: [
             {
-                path: '/users', // This renders at /users (index of parent) or we can use exact matching logic
+                path: '/management/users',
                 label: 'User List',
                 icon: Circle,
                 component: UsersPage
             },
-            // Example of another child route, reusing UsersPage for demo or a different page
             {
-                path: '/users/groups',
+                path: '/management/groups',
                 label: 'User Groups',
                 icon: Circle,
-                component: NotFound // Reusing for demo, ideally would be GroupsPage
+                component: NotFound
             }
         ]
     },
     {
-        path: '/settings',
+        path: '/system', // Unique parent path
         label: 'System',
         icon: Settings,
         children: [
             {
-                path: '/settings',
+                path: '/system/settings',
                 label: 'General Settings',
                 icon: Circle,
                 component: SettingsPage
             },
             {
-                path: '/settings/security',
+                path: '/system/security',
                 label: 'Security',
-                icon: Shield,
-                component: NotFound // Reusing for demo
+                icon: Circle,
+                component: NotFound
             }
         ]
     }

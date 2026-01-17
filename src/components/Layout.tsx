@@ -4,39 +4,48 @@ import Sidebar from './Sidebar';
 import { Button } from './ui/button';
 import { PanelLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { navRoutes } from '../lib/routes';
+import { navRoutes, type RouteConfig } from '../lib/routes';
 
 export default function Layout() {
     const { toggleSidebar } = useStore();
     const location = useLocation();
 
-    // 动态生成面包屑
+    // 深度查找当前路由及其祖先
     const breadcrumbs = useMemo(() => {
-        const parts = location.pathname.split('/').filter(Boolean);
-        const crumbs: { label: string; path: string }[] = [];
+        const findRouteWithParents = (
+            routes: RouteConfig[],
+            targetPath: string,
+            parents: RouteConfig[] = []
+        ): { route: RouteConfig, ancestors: RouteConfig[] } | null => {
+            for (const route of routes) {
+                if (route.path === targetPath) {
+                    return { route, ancestors: parents };
+                }
+                if (route.children) {
+                    const found = findRouteWithParents(route.children, targetPath, [...parents, route]);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
 
-        // 首页处理
-        if (location.pathname === '/') {
-            crumbs.push({ label: 'Dashboard', path: '/' });
-            return crumbs;
+        const matchResult = findRouteWithParents(navRoutes, location.pathname);
+
+        if (!matchResult) {
+            return [{ label: 'Dashboard', path: '/', isLink: false }];
         }
 
-        let searchCollection = navRoutes;
-        let accumulatedPath = '';
+        const crumbs = matchResult.ancestors.map(a => ({
+            label: a.label,
+            path: a.path,
+            // 只有定义了组件的路由才是有效链接
+            isLink: !!a.component && a.path !== location.pathname
+        }));
 
-        parts.forEach((segment) => {
-            accumulatedPath += `/${segment}`;
-            const match = searchCollection.find(r => r.path === accumulatedPath || r.path.endsWith(segment));
-
-            if (match) {
-                crumbs.push({ label: match.label, path: match.path });
-                if (match.children) searchCollection = match.children;
-            } else {
-                crumbs.push({
-                    label: segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
-                    path: accumulatedPath
-                });
-            }
+        crumbs.push({
+            label: matchResult.route.label,
+            path: matchResult.route.path,
+            isLink: false // 当前页面不作为链接
         });
 
         return crumbs;
@@ -65,17 +74,19 @@ export default function Layout() {
                     {/* 面包屑导航 */}
                     <nav className="flex items-center text-sm font-medium overflow-hidden">
                         {breadcrumbs.map((crumb, i) => (
-                            <React.Fragment key={crumb.path}>
+                            <React.Fragment key={crumb.path + i}>
                                 {i > 0 && <ChevronRight className="h-3.5 w-3.5 mx-2 text-muted-foreground shrink-0" />}
-                                {i === breadcrumbs.length - 1 ? (
-                                    <span className="text-foreground truncate">{crumb.label}</span>
-                                ) : (
+                                {crumb.isLink ? (
                                     <Link
                                         to={crumb.path}
                                         className="text-muted-foreground hover:text-foreground transition-colors truncate"
                                     >
                                         {crumb.label}
                                     </Link>
+                                ) : (
+                                    <span className={i === breadcrumbs.length - 1 ? "text-foreground truncate" : "text-muted-foreground cursor-default truncate"}>
+                    {crumb.label}
+                  </span>
                                 )}
                             </React.Fragment>
                         ))}
