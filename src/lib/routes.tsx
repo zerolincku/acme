@@ -11,6 +11,7 @@ import NotFound from "@/pages/NotFound.tsx";
 // Lazy load pages
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const UsersPage = lazy(() => import('../pages/Users'));
+const OrgsPage = lazy(() => import('../pages/Orgs'));
 const SettingsPage = lazy(() => import('../pages/Settings'));
 
 // Type definition for route configuration
@@ -42,11 +43,17 @@ export const navRoutes: RouteConfig[] = [
                 component: UsersPage
             },
             {
+                path: '/management/orgs',
+                label: 'Org List',
+                icon: Circle,
+                component: OrgsPage
+            },
+            {
                 path: '/management/groups',
                 label: 'User Groups',
                 icon: Circle,
                 component: NotFound
-            }
+            },
         ]
     },
     {

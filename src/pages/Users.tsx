@@ -15,6 +15,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '../components/ui/pagination';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 
 // Extended Mock Data for Pagination
 const allUsers = [
@@ -36,7 +37,7 @@ export default function Users() {
     const { addToast } = useStore();
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState("10");
 
     const handleAddUser = () => {
         addToast({
@@ -52,9 +53,10 @@ export default function Users() {
     );
 
     // Pagination Logic
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+    const pageSize = parseInt(itemsPerPage);
+    const totalPages = Math.ceil(filteredUsers.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const currentUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
 
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) {
@@ -214,26 +216,26 @@ export default function Users() {
 
                 {/* Pagination Footer */}
                 <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t px-6 py-4">
-                    <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 text-xs font-medium text-muted-foreground">
                         <div className="flex items-center gap-2">
-                            <span>Rows per page:</span>
-                            <select
-                                value={itemsPerPage}
-                                onChange={(e) => {
-                                    setItemsPerPage(Number(e.target.value));
-                                    setCurrentPage(1); // Reset to first page when changing page size
-                                }}
-                                className="h-8 w-16 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                                <option value={100}>100</option>
-                            </select>
+                            <span>Show</span>
+                            <div className="w-20">
+                                <Select value={itemsPerPage} onValueChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}>
+                                    <SelectTrigger className="h-8">
+                                        <SelectValue placeholder="5" />
+                                    </SelectTrigger>
+                                    <SelectContent side="top">
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <span>per page</span>
                         </div>
-                        <span>
-               Showing {filteredUsers.length === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{" "}
-                            {filteredUsers.length} entries
+                        <span className="opacity-70">
+               Showing {filteredUsers.length === 0 ? 0 : startIndex + 1} - {Math.min(startIndex + pageSize, filteredUsers.length)} of {filteredUsers.length}
              </span>
                     </div>
 
