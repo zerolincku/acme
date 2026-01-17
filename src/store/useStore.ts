@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'sonner';
 
 export interface User {
   id: string;
@@ -9,7 +10,6 @@ export interface User {
 }
 
 export interface Toast {
-  id: string;
   title?: string;
   description: string;
   variant?: 'default' | 'destructive' | 'success';
@@ -36,10 +36,8 @@ interface AppState {
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
 
-  // Toast State
-  toasts: Toast[];
-  addToast: (toast: Omit<Toast, 'id'>) => void;
-  dismissToast: (id: string) => void;
+  // Toast Helper (Wrapper for sonner)
+  addToast: (data: Toast) => void;
 
   // Theme State
   theme: Theme;
@@ -78,15 +76,16 @@ export const useStore = create<AppState>((set) => ({
   })),
 
   // Toast
-  toasts: [],
-  addToast: (toast) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
-    setTimeout(() => {
-      set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
-    }, 3000);
+  addToast: (data) => {
+    const { title, description, variant } = data;
+    if (variant === 'success') {
+      toast.success(title || 'Success', { description });
+    } else if (variant === 'destructive') {
+      toast.error(title || 'Error', { description });
+    } else {
+      toast(title || 'Notification', { description });
+    }
   },
-  dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
   // Theme
   theme: 'system',
