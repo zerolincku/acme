@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
-import { Lock } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ROUTE_PATHS } from '@/config/paths';
 import { loginWithPassword } from '@/api/modules/auth';
@@ -58,16 +58,21 @@ export default function Login() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-muted/20 p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="space-y-1">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
+            {/* Subtle background decoration */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+            <div className="pointer-events-none absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-40 right-0 h-96 w-96 rounded-full bg-primary/3 blur-3xl" />
+
+            <Card className="relative w-full max-w-md border-border/50">
+                <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="h-12 w-12 bg-primary rounded-full flex items-center justify-center">
-                            <Lock className="h-6 w-6 text-primary-foreground" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+                            <Cloud className="h-7 w-7 text-primary-foreground" />
                         </div>
                     </div>
-                    <CardTitle className="text-2xl text-center">{t('login.title')}</CardTitle>
-                    <CardDescription className="text-center">
+                    <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
+                    <CardDescription>
                         {t('login.description')}
                     </CardDescription>
                 </CardHeader>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useFetchData } from '@/hooks/use-fetch-data';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
@@ -10,10 +10,13 @@ import { Plus, Search } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { useStore } from '../store/useStore';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useDataTable } from '@/hooks/use-data-table';
 import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TableSkeleton } from '@/components/ui/table-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const ROLE_LABEL_KEY: Record<string, string> = {
     Admin: 'common.role.admin',
@@ -96,10 +99,10 @@ export default function Users() {
                     </div>
                     <div className="mt-4">
                         <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder={t('users.searchPlaceholder')}
-                                className="pl-8"
+                                className="pl-9"
                                 value={searchTerm}
                                 onChange={(e) => {
                                     setSearchTerm(e.target.value);
@@ -123,8 +126,8 @@ export default function Users() {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">
-                                        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                                    <TableCell colSpan={5}>
+                                        <TableSkeleton rows={3} columns={5} />
                                     </TableCell>
                                 </TableRow>
                             ) : error ? (
@@ -155,15 +158,7 @@ export default function Users() {
                                         </TableCell>
                                         <TableCell>{t(ROLE_LABEL_KEY[user.role] ?? user.role)}</TableCell>
                                         <TableCell>
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                    user.status === 'Active'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                }`}
-                                            >
-                                                {t(STATUS_LABEL_KEY[user.status])}
-                                            </span>
+                                            <StatusBadge status={user.status} label={t(STATUS_LABEL_KEY[user.status])} />
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <ActionMenu ariaLabel={t('users.columns.actions')} contentClassName="w-36 p-1">
@@ -186,8 +181,8 @@ export default function Users() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">
-                                        {t('users.noResults')}
+                                    <TableCell colSpan={5}>
+                                        <EmptyState title={t('users.noResults')} />
                                     </TableCell>
                                 </TableRow>
                             )}

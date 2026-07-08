@@ -10,6 +10,14 @@ export const THEME_PRIMARY_HSL: Record<ThemeColor, string> = {
   orange: '24.6 95% 53.1%',
 };
 
+export const THEME_PRIMARY_FOREGROUND_HSL: Record<ThemeColor, string> = {
+  zinc: '0 0% 98%',
+  red: '0 0% 100%',
+  blue: '0 0% 100%',
+  green: '0 0% 100%',
+  orange: '0 0% 100%',
+};
+
 export const THEME_SWATCH_COLOR: Record<ThemeColor, string> = {
   zinc: 'hsl(240 5.9% 10%)',
   red: 'hsl(0 72.2% 50.6%)',

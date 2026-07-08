@@ -112,6 +112,10 @@ export const en = {
         notFound: {
             description: 'Page not found.',
         },
+        comingSoon: {
+            title: 'Coming Soon',
+            description: 'This feature is under development. Stay tuned for updates.',
+        },
         dashboard: {
             title: 'Dashboard',
             subtitle: 'Infrastructure Overview',

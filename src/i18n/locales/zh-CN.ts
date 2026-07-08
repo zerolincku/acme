@@ -112,6 +112,10 @@ export const zhCN = {
         notFound: {
             description: '页面不存在。',
         },
+        comingSoon: {
+            title: '即将推出',
+            description: '此功能正在开发中，敬请期待。',
+        },
         dashboard: {
             title: '仪表盘',
             subtitle: '基础设施总览',

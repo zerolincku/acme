@@ -281,7 +281,7 @@ export default function HostDetail() {
 
       {activeTab === 'systemInfo' && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <Card className="overflow-hidden shadow-none">
+          <Card className="overflow-hidden">
             <div className="border-b px-5 py-4 text-lg font-semibold">
               {t('hostDetail.section.hardwareKernel')}
             </div>
@@ -473,7 +473,7 @@ export default function HostDetail() {
             </div>
           </div>
 
-          <Card className="overflow-hidden shadow-none">
+          <Card className="overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/25">
@@ -503,9 +503,9 @@ export default function HostDetail() {
                       <span
                         className={cn(
                           'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
-                          vm.status === 'running' && 'bg-emerald-100 text-emerald-700',
-                          vm.status === 'paused' && 'bg-amber-100 text-amber-700',
-                          vm.status === 'error' && 'bg-red-100 text-red-700',
+                          vm.status === 'running' && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                          vm.status === 'paused' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                          vm.status === 'error' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
                         )}
                       >
                         {vm.status === 'running' && t('hostDetail.status.running')}
@@ -542,8 +542,31 @@ export default function HostDetail() {
 
       {activeTab === 'overview' && (
         <Card className="shadow-none">
-          <div className="p-6 text-sm text-muted-foreground">
-            <p>{t('hostDetail.overview.description')}</p>
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground mb-6">{t('hostDetail.overview.description')}</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="flex items-center gap-4 rounded-lg border p-4">
+                <RingGauge percent={host.cpuPercent} color="#3b82f6" />
+                <div>
+                  <p className="text-xs text-muted-foreground">{t('hostDetail.summary.cpuUsage')}</p>
+                  <p className="text-lg font-semibold">{host.cpuUsed}/{host.cpuTotal} <span className="text-sm font-normal text-muted-foreground">Cores</span></p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 rounded-lg border p-4">
+                <RingGauge percent={host.memoryPercent} color="#f59e0b" />
+                <div>
+                  <p className="text-xs text-muted-foreground">{t('hostDetail.summary.memoryUsage')}</p>
+                  <p className="text-lg font-semibold">{host.memoryUsed}/{host.memoryTotal} <span className="text-sm font-normal text-muted-foreground">GB</span></p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 rounded-lg border p-4">
+                <RingGauge percent={host.storagePercent} color="#10b981" />
+                <div>
+                  <p className="text-xs text-muted-foreground">{t('hostDetail.summary.storageUsage')}</p>
+                  <p className="text-lg font-semibold">{host.storageUsed}/{host.storageTotal} <span className="text-sm font-normal text-muted-foreground">TB</span></p>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       )}

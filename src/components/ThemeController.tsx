@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { useShallow } from 'zustand/react/shallow';
-import { THEME_PRIMARY_HSL } from '@/theme/palette';
+import { THEME_PRIMARY_HSL, THEME_PRIMARY_FOREGROUND_HSL } from '@/theme/palette';
 
 export default function ThemeController() {
     const { theme, themeColor } = useStore(
@@ -44,19 +44,20 @@ export default function ThemeController() {
         const root = window.document.documentElement;
 
         if (themeColor === 'zinc') {
-            // Reset to default stylesheet values (handles dark/light zinc swap automatically)
             root.style.removeProperty('--primary');
             root.style.removeProperty('--primary-foreground');
             root.style.removeProperty('--ring');
             root.style.removeProperty('--sidebar-primary');
-        } else {
-            // Enforce specific color for primary elements
-            const hsl = THEME_PRIMARY_HSL[themeColor];
-            root.style.setProperty('--primary', hsl);
-            root.style.setProperty('--primary-foreground', '0 0% 100%'); // White text for colored buttons
-            root.style.setProperty('--ring', hsl);
-            root.style.setProperty('--sidebar-primary', hsl);
+            return;
         }
+
+        const hsl = THEME_PRIMARY_HSL[themeColor];
+        const fgHsl = THEME_PRIMARY_FOREGROUND_HSL[themeColor];
+
+        root.style.setProperty('--primary', hsl);
+        root.style.setProperty('--primary-foreground', fgHsl);
+        root.style.setProperty('--ring', hsl);
+        root.style.setProperty('--sidebar-primary', hsl);
     }, [themeColor]);
 
     return null;

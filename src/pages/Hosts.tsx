@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useFetchData } from '@/hooks/use-fetch-data';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -22,6 +22,9 @@ import {
   Server,
   XCircle,
 } from 'lucide-react';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TableSkeleton } from '@/components/ui/table-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type HostStatus = 'Online' | 'Maintenance' | 'Offline';
 type KvmStatus = 'Healthy' | 'Warning' | 'Down';
@@ -399,7 +402,7 @@ export default function Hosts() {
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden shadow-none">
+      <Card className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
@@ -416,8 +419,8 @@ export default function Hosts() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                <TableCell colSpan={8}>
+                  <TableSkeleton rows={5} columns={8} />
                 </TableCell>
               </TableRow>
             ) : error ? (
@@ -464,18 +467,11 @@ export default function Hosts() {
                   </TableCell>
                   <TableCell className="font-mono text-sm">{host.ipAddress}</TableCell>
                   <TableCell>
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold',
-                        host.status === 'Online' && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                        host.status === 'Maintenance' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                        host.status === 'Offline' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      )}
-                    >
-                      {host.status === 'Online' && t('hosts.status.online')}
-                      {host.status === 'Maintenance' && t('hosts.status.maintenance')}
-                      {host.status === 'Offline' && t('hosts.status.offline')}
-                    </span>
+                    <StatusBadge status={host.status} label={
+                      host.status === 'Online' ? t('hosts.status.online')
+                      : host.status === 'Maintenance' ? t('hosts.status.maintenance')
+                      : t('hosts.status.offline')
+                    } />
                   </TableCell>
                   <TableCell>
                     <UsageCell
@@ -514,8 +510,8 @@ export default function Hosts() {
             })
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  {t('hosts.empty')}
+                <TableCell colSpan={8}>
+                  <EmptyState title={t('hosts.empty')} />
                 </TableCell>
               </TableRow>
             )}

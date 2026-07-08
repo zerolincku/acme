@@ -7,4 +7,5 @@ export const UsersPage = lazy(() => import('../pages/Users'));
 export const OrgsPage = lazy(() => import('../pages/Orgs'));
 export const SettingsPage = lazy(() => import('../pages/Settings'));
 export const NotFoundPage = lazy(() => import('../pages/NotFound'));
+export const ComingSoonPage = lazy(() => import('../pages/ComingSoon'));
 export const ComponentsPage = lazy(() => import('../pages/Components'));

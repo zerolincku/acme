@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useFetchData } from '@/hooks/use-fetch-data';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card';
@@ -21,6 +21,9 @@ import {
 import { useDataTable } from '@/hooks/use-data-table';
 import { ActionMenu, ActionMenuItem } from '@/components/ActionMenu';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TableSkeleton } from '@/components/ui/table-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const ORG_TYPE_LABEL_KEY: Record<string, string> = {
     University: 'orgs.types.university',
@@ -216,8 +219,8 @@ export default function Orgs() {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
-                                        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                                    <TableCell colSpan={6}>
+                                        <TableSkeleton rows={3} columns={6} />
                                     </TableCell>
                                 </TableRow>
                             ) : error ? (
@@ -244,14 +247,7 @@ export default function Orgs() {
                                         <TableCell className="text-sm">{item.location}</TableCell>
                                         <TableCell>{item.head}</TableCell>
                                         <TableCell>
-                                            <span className={cn(
-                                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                                item.status === 'Active'
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-                                            )}>
-                                                {t(STATUS_LABEL_KEY[item.status])}
-                                            </span>
+                                            <StatusBadge status={item.status} label={t(STATUS_LABEL_KEY[item.status])} />
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <ActionMenu ariaLabel={t('orgs.columns.actions')} contentClassName="w-36 p-1">
@@ -274,8 +270,8 @@ export default function Orgs() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                                        {t('orgs.noResults')}
+                                    <TableCell colSpan={6}>
+                                        <EmptyState title={t('orgs.noResults')} />
                                     </TableCell>
                                 </TableRow>
                             )}

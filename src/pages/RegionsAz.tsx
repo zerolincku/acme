@@ -226,7 +226,7 @@ export default function RegionsAz() {
         const activeZoneCount = region.zones.filter((zone) => zone.status === 'active').length;
 
         return (
-          <Card key={region.id} className="overflow-hidden border-border/90 shadow-none">
+          <Card key={region.id} className="overflow-hidden border-border/90">
             <div className={cn('px-4 py-3.5', isExpanded && 'border-b')}>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-3">

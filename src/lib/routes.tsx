@@ -11,12 +11,12 @@ import {
 import {
     DashboardPage,
     HostsPage,
-    NotFoundPage,
     OrgsPage,
     RegionsAzPage,
     SettingsPage,
     UsersPage,
     ComponentsPage,
+    ComingSoonPage,
 } from '@/lib/route-components';
 import { ROUTE_PATHS } from '@/config/paths';
 
@@ -83,14 +83,14 @@ export const navRoutes: RouteConfig[] = [
                 label: 'Virtual Machines',
                 labelKey: 'nav.virtualMachines',
                 icon: Circle,
-                component: NotFoundPage
+                component: ComingSoonPage
             },
             {
                 path: ROUTE_PATHS.STORAGE_POOLS,
                 label: 'Storage Pools',
                 labelKey: 'nav.storagePools',
                 icon: Circle,
-                component: NotFoundPage
+                component: ComingSoonPage
             },
         ]
     },
@@ -119,7 +119,7 @@ export const navRoutes: RouteConfig[] = [
                 label: 'User Groups',
                 labelKey: 'nav.userGroups',
                 icon: Circle,
-                component: NotFoundPage,
+                component: ComingSoonPage,
             },
         ],
     },
@@ -141,7 +141,7 @@ export const navRoutes: RouteConfig[] = [
                 label: 'Security',
                 labelKey: 'nav.security',
                 icon: Circle,
-                component: NotFoundPage
+                component: ComingSoonPage
             }
         ]
     },
