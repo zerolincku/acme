@@ -33,9 +33,14 @@
     --color-card-foreground: hsl(var(--card-foreground));
 
     /* Border Radius Mapping */
+    --radius-xs: var(--radius);
+    --radius-sm: var(--radius);
+    --radius-md: var(--radius);
     --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    --radius-xl: var(--radius);
+    --radius-2xl: var(--radius);
+    --radius-3xl: var(--radius);
+    --radius-4xl: var(--radius);
 }
 
 /* Dark Mode Class Variant */

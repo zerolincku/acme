@@ -78,7 +78,7 @@ export default function Sidebar() {
     useEffect(() => {
         if (isCollapsed) return;
         navRoutes.forEach((item) => {
-            if (item.children?.some((child) => location.pathname === child.path)) {
+            if (item.children && (location.pathname === item.path || item.children.some((child) => location.pathname === child.path))) {
                 setExpandedMenus((prev) => (prev.includes(item.path) ? prev : [...prev, item.path]));
             }
         });
@@ -120,7 +120,9 @@ export default function Sidebar() {
                         {navRoutes.map((item) => {
                             const Icon = item.icon || Box;
                             const isExpanded = expandedMenus.includes(item.path) && !isCollapsed;
-                            const isActiveParent = item.children?.some((child) => location.pathname === child.path);
+                            const isActiveParent = item.children
+                                ? location.pathname === item.path || item.children.some((child) => location.pathname === child.path)
+                                : false;
                             const itemLabel = getRouteLabel(item);
 
                             if (item.children) {

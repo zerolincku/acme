@@ -6,6 +6,7 @@ import {
     Settings,
     Circle,
     Component,
+    PanelsTopLeft,
     type LucideIcon
 } from 'lucide-react';
 import {
@@ -17,6 +18,12 @@ import {
     UsersPage,
     ComponentsPage,
     ComingSoonPage,
+    PageTemplateCreatePage,
+    PageTemplateDetailPage,
+    PageTemplateDialogPage,
+    PageTemplateListPage,
+    PageTemplateSheetPage,
+    PageTemplateStatsPage,
 } from '@/lib/route-components';
 import { ROUTE_PATHS } from '@/config/paths';
 
@@ -151,5 +158,56 @@ export const navRoutes: RouteConfig[] = [
         labelKey: 'nav.components',
         icon: Component,
         component: ComponentsPage,
+    },
+    {
+        path: ROUTE_PATHS.PAGE_TEMPLATES,
+        label: 'Page Templates',
+        labelKey: 'nav.pageTemplates',
+        icon: PanelsTopLeft,
+        component: PageTemplateListPage,
+        children: [
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_LIST,
+                label: 'List Page',
+                labelKey: 'nav.pageTemplateList',
+                icon: Circle,
+                component: PageTemplateListPage,
+            },
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_DETAIL,
+                label: 'Detail Page',
+                labelKey: 'nav.pageTemplateDetail',
+                icon: Circle,
+                component: PageTemplateDetailPage,
+            },
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_CREATE,
+                label: 'Create Page',
+                labelKey: 'nav.pageTemplateCreate',
+                icon: Circle,
+                component: PageTemplateCreatePage,
+            },
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_SHEET,
+                label: 'Drawer Page',
+                labelKey: 'nav.pageTemplateSheet',
+                icon: Circle,
+                component: PageTemplateSheetPage,
+            },
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_DIALOG,
+                label: 'Modal Page',
+                labelKey: 'nav.pageTemplateDialog',
+                icon: Circle,
+                component: PageTemplateDialogPage,
+            },
+            {
+                path: ROUTE_PATHS.PAGE_TEMPLATE_STATS,
+                label: 'Analytics Page',
+                labelKey: 'nav.pageTemplateStats',
+                icon: Circle,
+                component: PageTemplateStatsPage,
+            },
+        ],
     }
 ];

@@ -18,4 +18,11 @@ export const ROUTE_PATHS = {
   SECURITY: '/system/security',
 
   COMPONENTS: '/components',
+  PAGE_TEMPLATES: '/page-templates',
+  PAGE_TEMPLATE_LIST: '/page-templates/list',
+  PAGE_TEMPLATE_DETAIL: '/page-templates/detail',
+  PAGE_TEMPLATE_CREATE: '/page-templates/create',
+  PAGE_TEMPLATE_SHEET: '/page-templates/sheet',
+  PAGE_TEMPLATE_DIALOG: '/page-templates/dialog',
+  PAGE_TEMPLATE_STATS: '/page-templates/stats',
 } as const;
